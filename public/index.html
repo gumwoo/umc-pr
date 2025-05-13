@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMC PR 프로젝트</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        .endpoint {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .method {
+            font-weight: bold;
+            background-color: #3498db;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #response {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>UMC PR API 서버</h1>
+    <p>UMC Node.js 챕터 프로젝트 API 서버에 오신 것을 환영합니다.</p>
+    
+    <h2>API 엔드포인트</h2>
+    
+    <div class="endpoint">
+        <p><span class="method">GET</span> /</p>
+        <p>API 서버 상태 확인</p>
+        <button onclick="testEndpoint('/')">테스트</button>
+    </div>
+    
+    <div class="endpoint">
+        <p><span class="method">POST</span> /api/users/signup</p>
+        <p>새 사용자 회원가입</p>
+        <pre><code>{
+  "email": "test@example.com",
+  "name": "테스트 사용자",
+  "gender": "Male",
+  "birth": "2000-01-01",
+  "address": "서울시 강남구",
+  "detailAddress": "테헤란로 123",
+  "phoneNumber": "010-1234-5678",
+  "preferences": [1, 2, 3]
+}</code></pre>
+        <button onclick="testSignup()">테스트</button>
+    </div>
+    
+    <h2>응답 결과</h2>
+    <div id="response">응답 대기 중...</div>
+    
+    <script>
+        async function testEndpoint(endpoint) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = '요청 중...';
+            
+            try {
+                const response = await fetch(endpoint);
+                const text = await response.text();
+                responseDiv.textContent = `Status: ${response.status}\n\n${text}`;
+            } catch (error) {
+                responseDiv.textContent = `오류 발생: ${error.message}`;
+            }
+        }
+        
+        async function testSignup() {
+            const responseDiv = document.getElementById('response');
+            responseDiv.textContent = '요청 중...';
+            
+            const testData = {
+                email: `test${Date.now()}@example.com`,  // 유니크한 이메일 생성
+                name: "테스트 사용자",
+                gender: "Male",
+                birth: "2000-01-01",
+                address: "서울시 강남구",
+                detailAddress: "테헤란로 123",
+                phoneNumber: "010-1234-5678",
+                preferences: [1, 2, 3]
+            };
+            
+            try {
+                const response = await fetch('/api/users/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData),
+                });
+                
+                const result = await response.json();
+                responseDiv.textContent = `Status: ${response.status}\n\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                responseDiv.textContent = `오류 발생: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,37 +1,41 @@
-import prisma from "../prisma.js";
-import logger from "../utils/logger.js";
+import prisma from '../prisma.js';
+import logger from '../utils/logger.js';
 
 // User 데이터 삽입
 export const addUser = async (data) => {
   try {
-    const user = await prisma.user.findFirst({
+    // 이메일 중복 확인
+    const existingUser = await prisma.user.findUnique({
       where: {
         email: data.email
       }
     });
 
-    if (user) {
-      logger.warn("이미 존재하는 이메일입니다.", { email: data.email });
+    if (existingUser) {
+      logger.warn('이미 존재하는 이메일입니다.', { email: data.email });
       return null;
     }
 
-    const created = await prisma.user.create({
+    // 사용자 생성
+    const newUser = await prisma.user.create({
       data: {
         email: data.email,
         name: data.name,
         gender: data.gender,
         birth: data.birth,
-        address: data.address || "",
-        detail_address: data.detailAddress || "",
+        address: data.address || '',
+        detail_address: data.detailAddress || '',
         phone_number: data.phoneNumber
       }
     });
 
-    logger.info("사용자가 성공적으로 생성되었습니다.", { userId: created.id });
-    return created.id;
+    logger.info('사용자가 성공적으로 생성되었습니다.', { userId: newUser.id });
+    return newUser.id;
   } catch (err) {
-    logger.error("사용자 추가 중 오류 발생", { error: err.message });
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`);
+    logger.error('사용자 추가 중 오류 발생', { error: err.message });
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`
+    );
   }
 };
 
@@ -45,14 +49,16 @@ export const getUser = async (userId) => {
     });
 
     if (!user) {
-      logger.warn("사용자를 찾을 수 없습니다.", { userId });
+      logger.warn('사용자를 찾을 수 없습니다.', { userId });
       return null;
     }
 
     return [user]; // 기존 MySQL 호환성을 위해 배열로 반환
   } catch (err) {
-    logger.error("사용자 조회 중 오류 발생", { error: err.message, userId });
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`);
+    logger.error('사용자 조회 중 오류 발생', { error: err.message, userId });
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`
+    );
   }
 };
 
@@ -66,11 +72,13 @@ export const setPreference = async (userId, foodCategoryId) => {
       }
     });
 
-    logger.info("사용자 선호도가 설정되었습니다.", { userId, foodCategoryId });
+    logger.info('사용자 선호도가 설정되었습니다.', { userId, foodCategoryId });
     return;
   } catch (err) {
-    logger.error("선호도 설정 중 오류 발생", { error: err.message, userId, foodCategoryId });
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`);
+    logger.error('선호도 설정 중 오류 발생', { error: err.message, userId, foodCategoryId });
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`
+    );
   }
 };
 
@@ -97,8 +105,10 @@ export const getUserPreferencesByUserId = async (userId) => {
       name: pref.food_category.name
     }));
   } catch (err) {
-    logger.error("사용자 선호도 조회 중 오류 발생", { error: err.message, userId });
-    throw new Error(`오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`);
+    logger.error('사용자 선호도 조회 중 오류 발생', { error: err.message, userId });
+    throw new Error(
+      `오류가 발생했어요. 요청 파라미터를 확인해주세요. (${err.message})`
+    );
   }
 };
 
