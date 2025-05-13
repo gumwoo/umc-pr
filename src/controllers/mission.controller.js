@@ -29,10 +29,9 @@ export const handleCreateMission = async (req, res, next) => {
     const mission = await createMission(missionData);
     
     logger.info('미션 추가 성공', { missionId: mission.id });
-    res.status(StatusCodes.CREATED).json({
-      success: true,
+    res.status(StatusCodes.CREATED).success({
       message: '미션이 성공적으로 추가되었습니다.',
-      data: mission
+      mission
     });
   } catch (error) {
     logger.error('미션 추가 처리 중 오류 발생', { error: error.message });
@@ -66,8 +65,7 @@ export const handleListStoreMissions = async (req, res, next) => {
       hasMore: result.cursor !== null
     });
     
-    res.status(StatusCodes.OK).json({
-      success: true,
+    res.status(StatusCodes.OK).success({
       data: result.data,
       pagination: {
         cursor: result.cursor
@@ -111,8 +109,7 @@ export const handleListMyMissions = async (req, res, next) => {
       hasMore: result.cursor !== null
     });
     
-    res.status(StatusCodes.OK).json({
-      success: true,
+    res.status(StatusCodes.OK).success({
       data: result.data,
       pagination: {
         cursor: result.cursor
@@ -148,10 +145,9 @@ export const handleChallengeMission = async (req, res, next) => {
     const challenge = await challengeMission(missionId, userId);
     
     logger.info('미션 도전 성공', { challengeId: challenge.id });
-    res.status(StatusCodes.CREATED).json({
-      success: true,
+    res.status(StatusCodes.CREATED).success({
       message: '미션에 성공적으로 도전했습니다.',
-      data: challenge
+      challenge
     });
   } catch (error) {
     logger.error('미션 도전 처리 중 오류 발생', { 
@@ -184,10 +180,9 @@ export const handleCompleteMission = async (req, res, next) => {
     const challenge = await completeMission(challengeId, userId);
     
     logger.info('미션 완료 성공', { challengeId: challenge.id });
-    res.status(StatusCodes.OK).json({
-      success: true,
+    res.status(StatusCodes.OK).success({
       message: '미션이 성공적으로 완료되었습니다.',
-      data: challenge
+      challenge
     });
   } catch (error) {
     logger.error('미션 완료 처리 중 오류 발생', { 

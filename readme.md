@@ -1,20 +1,25 @@
-# UMC PR 프로젝트
+# UMC PR API 서버
 
-UMC Node.js 백엔드 서버 프로젝트로, 사용자 관리 및 음식 카테고리 선호도 설정 기능을 제공합니다.
+UMC Node.js를 활용한 백엔드 서버 프로젝트로, 사용자 관리, 가게 정보 관리, 리뷰 및 미션 기능을 제공하는 RESTful API 서버입니다.
 
 ## 주요 기능
 
-- 사용자 회원가입 및 관리
-- 음식 카테고리 선호도 설정
-- Prisma ORM을 이용한 데이터 관리
-- 로깅 시스템
+- **사용자 관리**: 회원가입, 선호 음식 카테고리 설정
+- **가게 관리**: 특정 지역에 가게 추가, 가게 정보 조회
+- **리뷰 시스템**: 가게에 리뷰 추가, 내가 작성한 리뷰 목록 조회
+- **미션 시스템**: 가게에 미션 추가, 미션 도전 및 완료
+- **표준화된 API 응답**: 성공/실패 응답 형식 통일
+- **체계적인 오류 처리**: 오류 코드 및 상세 정보 제공
+- **응답 압축**: 네트워크 대역폭 최적화
 
 ## 기술 스택
 
 - **백엔드**: Node.js, Express
 - **데이터베이스**: MySQL
 - **ORM**: Prisma
-- **기타 라이브러리**: dotenv, cors 등
+- **유틸리티**: dotenv(환경변수), cors(CORS 처리), compression(응답 압축)
+- **로깅**: winston 기반 커스텀 로거
+- **API 응답**: 표준화된 JSON 응답 형식
 
 ## 시작하기
 
@@ -39,34 +44,58 @@ UMC Node.js 백엔드 서버 프로젝트로, 사용자 관리 및 음식 카테
 
 3. `.env` 파일 설정
    ```
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=your_password
-   DB_NAME=umc_7th
-   PORT=3000
-   DATABASE_URL="mysql://root:your_password@localhost:3306/umc_7th"
+   PORT=5000
+   DATABASE_URL="mysql://username:password@localhost:3306/umc_db"
    ```
 
-4. Prisma 클라이언트 생성
+4. Prisma 클라이언트 생성 및 DB 마이그레이션
    ```bash
    npx prisma generate
-   ```
-
-5. 데이터베이스 마이그레이션 실행
-   ```bash
    npx prisma migrate dev --name init
    ```
 
-6. 서버 실행
+5. 서버 실행
    ```bash
+   # 개발 모드 (nodemon)
    npm run dev
+   
+   # 프로덕션 모드
+   npm start
    ```
 
-## API 사용법
+## API 표준 응답 형식
 
-### 사용자 회원가입
+### 성공 응답
+```json
+{
+  "resultType": "SUCCESS",
+  "error": null,
+  "success": {
+    // 실제 응답 데이터
+  }
+}
+```
 
+### 실패 응답
+```json
+{
+  "resultType": "FAIL",
+  "error": {
+    "errorCode": "E001",
+    "reason": "오류 원인 메시지",
+    "data": {
+      // 오류 관련 추가 데이터 (선택적)
+    }
+  },
+  "success": null
+}
+```
+
+## API 엔드포인트
+
+### 1. 사용자 API
+
+#### 회원가입
 - **URL**: `/api/users/signup`
 - **Method**: POST
 - **Request Body**:
@@ -82,6 +111,104 @@ UMC Node.js 백엔드 서버 프로젝트로, 사용자 관리 및 음식 카테
     "preferences": [1, 2, 3] // 음식 카테고리 ID 배열
   }
   ```
+- **성공 응답**:
+  ```json
+  {
+    "resultType": "SUCCESS",
+    "error": null,
+    "success": {
+      "member_id": 1,
+      "email": "user@example.com",
+      "name": "사용자명",
+      "gender": "Male/Female",
+      "birth": "YYYY-MM-DD",
+      "address": "주소",
+      "detailAddress": "상세주소",
+      "phoneNumber": "전화번호",
+      "preferences": [
+        { "id": 1, "name": "한식" },
+        { "id": 2, "name": "중식" },
+        { "id": 3, "name": "일식" }
+      ]
+    }
+  }
+  ```
+
+### 2. 가게 API
+
+#### 가게 추가
+- **URL**: `/api/stores`
+- **Method**: POST
+- **Request Body**:
+  ```json
+  {
+    "name": "가게명",
+    "address": "가게 주소",
+    "contact": "연락처",
+    "categoryId": 1,
+    "regionId": 1,
+    "description": "가게 설명",
+    "openingHours": "영업시간"
+  }
+  ```
+
+### 3. 리뷰 API
+
+#### 리뷰 추가
+- **URL**: `/api/reviews`
+- **Method**: POST
+- **Request Body**:
+  ```json
+  {
+    "content": "리뷰 내용",
+    "score": 4.5,
+    "imageUrl": "이미지URL",
+    "storeId": 1
+  }
+  ```
+
+#### 내 리뷰 목록 조회
+- **URL**: `/api/reviews/my`
+- **Method**: GET
+- **Query Parameters**:
+  - `cursor`: 페이지네이션 커서 (이전 페이지의 마지막 리뷰 ID)
+  - `limit`: 한 페이지에 조회할 리뷰 수 (기본값: 5)
+
+### 4. 미션 API
+
+#### 미션 추가
+- **URL**: `/api/missions`
+- **Method**: POST
+- **Request Body**:
+  ```json
+  {
+    "title": "미션 제목",
+    "content": "미션 내용",
+    "reward": 1000,
+    "deadline": "2025-06-30T23:59:59.999Z",
+    "storeId": 1
+  }
+  ```
+
+#### 미션 도전
+- **URL**: `/api/missions/:missionId/challenges`
+- **Method**: POST
+
+#### 미션 완료
+- **URL**: `/api/missions/challenges/:challengeId/complete`
+- **Method**: PATCH
+
+## 오류 코드 체계
+
+- **U001~U999**: 사용자 관련 오류 (예: U001 - 중복된 이메일)
+- **S001~S999**: 가게 관련 오류 (예: S001 - 가게를 찾을 수 없음)
+- **V001~V999**: 리뷰 관련 오류 (예: V001 - 리뷰를 찾을 수 없음)
+- **M001~M999**: 미션 관련 오류 (예: M001 - 미션을 찾을 수 없음)
+- **R001~R999**: 리소스 관련 오류 (예: R001 - 리소스를 찾을 수 없음)
+- **Q001~Q999**: 요청 관련 오류 (예: Q001 - 유효하지 않은 요청)
+- **A001~A999**: 인증/권한 관련 오류 (예: A001 - 인증 실패)
+- **D001~D999**: 데이터베이스 관련 오류
+- **E001~E999**: 외부 서비스 관련 오류
 
 ## 프로젝트 구조
 
@@ -98,82 +225,94 @@ umc-pr/
 │   ├── routes/          # API 라우트 정의
 │   ├── services/        # 비즈니스 로직 레이어
 │   ├── utils/           # 유틸리티 함수
-│   ├── app.js           # Express 앱 설정
-│   ├── db.config.js     # 데이터베이스 설정 (MySQL)
+│   │   ├── errors-unified.js  # 오류 클래스 통합
+│   │   └── logger.js    # 로깅 설정
 │   ├── index.js         # 앱 진입점
 │   └── prisma.js        # Prisma 클라이언트 설정
 ├── .env                 # 환경 변수
-├── .gitignore           # Git 무시 파일
 ├── package.json         # 프로젝트 메타데이터
 └── README.md            # 프로젝트 설명
 ```
 
 ## 개발 가이드
 
-### 코드 스타일
+### API 응답 형식 사용하기
 
-- ES 모듈 형식 사용 (`import`/`export`)
-- 비동기 작업은 async/await 패턴 사용
-- 에러 핸들링은 try-catch 구문 사용
-- 로그 남기기 (`logger` 객체 사용)
+컨트롤러에서 API 응답을 반환할 때는 `res.success()`와 `res.error()` 메서드를 사용하여 표준화된 응답 형식을 유지하세요:
 
-### 데이터베이스 접근
-
-기존 MySQL 직접 연결 방식:
 ```javascript
-import { pool } from "../db.config.js";
+// 성공 응답
+res.status(StatusCodes.OK).success({
+  message: '작업이 성공적으로 완료되었습니다.',
+  data: result
+});
 
-const [result] = await pool.query(
-  `INSERT INTO user (email, name) VALUES (?, ?);`,
-  [data.email, data.name]
-);
-```
-
-Prisma ORM 사용 방식:
-```javascript
-import prisma from "../prisma.js";
-
-const result = await prisma.user.create({
-  data: {
-    email: data.email,
-    name: data.name
-  }
+// 실패 응답
+res.status(StatusCodes.BAD_REQUEST).error({
+  errorCode: 'Q001',
+  reason: '유효하지 않은 요청입니다.',
+  data: { field: 'email' }
 });
 ```
 
-### 로깅
+### 오류 처리하기
 
-로깅 레벨:
-- `error`: 오류 및 예외 상황
-- `warn`: 경고 및 주의가 필요한 상황
-- `info`: 일반적인 정보성 로그
-- `debug`: 디버깅을 위한 상세 정보
+서비스 레이어에서는 통합된 오류 클래스를 사용하여 구체적인 오류 정보를 제공하세요:
 
-사용 예시:
 ```javascript
-import logger from "../utils/logger.js";
+import { 
+  InvalidRequestError, 
+  DuplicateUserEmailError 
+} from '../utils/errors-unified.js';
 
-// 정보 로깅
-logger.info("작업이 시작되었습니다", { userId: 123 });
+// 유효성 검사 실패 시
+if (!email) {
+  throw new InvalidRequestError('이메일은 필수 입력 항목입니다.');
+}
 
-// 오류 로깅
-try {
-  // 코드 실행
-} catch (error) {
-  logger.error("오류가 발생했습니다", { 
-    error: error.message,
-    stack: error.stack
-  });
+// 중복 데이터 발생 시
+if (existingUser) {
+  throw new DuplicateUserEmailError('이미 사용 중인 이메일입니다.', { email });
 }
 ```
+
+### 로깅 사용하기
+
+다양한 로깅 레벨을 활용하여 적절한 로그를 남기세요:
+
+```javascript
+import logger from '../utils/logger.js';
+
+// 정보 로그
+logger.info('사용자 로그인 시도', { email });
+
+// 경고 로그
+logger.warn('잘못된 비밀번호 입력', { email, attempts: 3 });
+
+// 오류 로그
+logger.error('데이터베이스 연결 실패', { 
+  error: error.message,
+  stack: error.stack
+});
+
+// 디버그 로그
+logger.debug('요청 데이터', { body: req.body });
+```
+
+## 성능 최적화
+
+이 프로젝트는 다음과 같은 성능 최적화 기법을 적용하고 있습니다:
+
+1. **응답 압축**: `compression` 미들웨어를 사용하여 0.5kb 이상의 응답을 자동으로 압축
+2. **데이터베이스 최적화**: Prisma ORM을 활용한 효율적인 쿼리 실행
+3. **커스텀 로거**: 프로덕션 환경에서 필요한 로그만 남기도록 설정
 
 ## 기여 방법
 
 1. 이슈 생성 또는 기존 이슈 선택
 2. 개발 브랜치 생성 (`feature/기능명`)
-3. 변경사항 개발
-4. 테스트 실행
-5. Pull Request 제출
+3. 변경사항 개발 및 테스트
+4. Pull Request 제출
 
 ## 라이센스
 

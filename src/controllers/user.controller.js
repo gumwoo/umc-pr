@@ -10,7 +10,7 @@ export const handleUserSignUp = async (req, res, next) => {
   try {
     const user = await userSignUp(bodyToUser(req.body));
     logger.info("회원가입 성공", { userId: user.member_id });
-    res.status(StatusCodes.OK).json({ result: user });
+    res.status(StatusCodes.OK).success(user);
   } catch (error) {
     logger.error("회원가입 처리 중 오류 발생", { error: error.message });
     next(error); // 오류 핸들러로 전달

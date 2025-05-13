@@ -1,64 +1,25 @@
-import { StatusCodes } from 'http-status-codes';
+/**
+ * 오류 처리를 통합된 오류 클래스로 리다이렉션합니다.
+ * 프로젝트 일관성을 위해 utils/errors-unified.js 파일의 오류 클래스를 사용하세요.
+ * 
+ * 이 파일은 기존 코드와의 호환성을 위해 유지됩니다.
+ */
+
+// 통합 오류 클래스 가져오기
+import * as unifiedErrors from './errors-unified.js';
+
+// 호환성을 위한 재내보내기
+export const ApiError = unifiedErrors.ApiError;
+export const NotFoundError = unifiedErrors.ResourceNotFoundError;  // 호환성을 위한 이름 변경
+export const BadRequestError = unifiedErrors.InvalidRequestError;  // 호환성을 위한 이름 변경
+export const ConflictError = unifiedErrors.DuplicateResourceError; // 호환성을 위한 이름 변경
+export const UnauthorizedError = unifiedErrors.AuthenticationError; // 호환성을 위한 이름 변경
+export const ForbiddenError = unifiedErrors.PermissionDeniedError;  // 호환성을 위한 이름 변경
+
+// 나머지 오류 클래스도 내보내기
+export * from './errors-unified.js';
 
 /**
- * API 에러 클래스
- * 상태 코드와 메시지를 포함한 에러를 생성
+ * @deprecated utils/errors-unified.js의 클래스를 사용하세요.
  */
-export class ApiError extends Error {
-  /**
-   * @param {string} message - 에러 메시지
-   * @param {number} statusCode - HTTP 상태 코드
-   * @param {string} name - 에러 이름
-   */
-  constructor(message, statusCode = StatusCodes.INTERNAL_SERVER_ERROR, name = 'ApiError') {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = name;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-/**
- * 리소스를 찾을 수 없는 경우의 에러
- */
-export class NotFoundError extends ApiError {
-  constructor(message = '요청한 리소스를 찾을 수 없습니다.') {
-    super(message, StatusCodes.NOT_FOUND, 'NotFoundError');
-  }
-}
-
-/**
- * 잘못된 요청 형식이나 내용인 경우의 에러
- */
-export class BadRequestError extends ApiError {
-  constructor(message = '잘못된 요청입니다.') {
-    super(message, StatusCodes.BAD_REQUEST, 'BadRequestError');
-  }
-}
-
-/**
- * 요청 처리 중 중복된 데이터가 발생한 경우의 에러
- */
-export class ConflictError extends ApiError {
-  constructor(message = '이미 존재하는 데이터입니다.') {
-    super(message, StatusCodes.CONFLICT, 'ConflictError');
-  }
-}
-
-/**
- * 인증되지 않은 요청인 경우의 에러
- */
-export class UnauthorizedError extends ApiError {
-  constructor(message = '인증이 필요합니다.') {
-    super(message, StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
-  }
-}
-
-/**
- * 권한이 없는 경우의 에러
- */
-export class ForbiddenError extends ApiError {
-  constructor(message = '접근 권한이 없습니다.') {
-    super(message, StatusCodes.FORBIDDEN, 'ForbiddenError');
-  }
-}
+console.warn('src/utils/errors.js는 더 이상 사용되지 않습니다. 대신 utils/errors-unified.js를 사용하세요.');

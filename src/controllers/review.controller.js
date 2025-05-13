@@ -22,10 +22,9 @@ export const handleCreateReview = async (req, res, next) => {
     const review = await createReview(reviewData, userId);
     
     logger.info('리뷰 추가 성공', { reviewId: review.id });
-    res.status(StatusCodes.CREATED).json({
-      success: true,
+    res.status(StatusCodes.CREATED).success({
       message: '리뷰가 성공적으로 추가되었습니다.',
-      data: review
+      review
     });
   } catch (error) {
     logger.error('리뷰 추가 처리 중 오류 발생', { error: error.message });
@@ -59,8 +58,7 @@ export const handleListStoreReviews = async (req, res, next) => {
       hasMore: result.cursor !== null
     });
     
-    res.status(StatusCodes.OK).json({
-      success: true,
+    res.status(StatusCodes.OK).success({
       data: result.data,
       pagination: {
         cursor: result.cursor
@@ -104,8 +102,7 @@ export const handleListMyReviews = async (req, res, next) => {
       hasMore: result.cursor !== null
     });
     
-    res.status(StatusCodes.OK).json({
-      success: true,
+    res.status(StatusCodes.OK).success({
       data: result.data,
       pagination: {
         cursor: result.cursor

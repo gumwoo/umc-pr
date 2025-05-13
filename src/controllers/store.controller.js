@@ -18,10 +18,9 @@ export const handleCreateStore = async (req, res, next) => {
     const store = await createStore(storeData);
     
     logger.info('가게 추가 성공', { storeId: store.id });
-    res.status(StatusCodes.CREATED).json({
-      success: true,
+    res.status(StatusCodes.CREATED).success({
       message: '가게가 성공적으로 추가되었습니다.',
-      data: store
+      store
     });
   } catch (error) {
     logger.error('가게 추가 처리 중 오류 발생', { error: error.message });
